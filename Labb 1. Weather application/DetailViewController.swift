@@ -122,6 +122,7 @@ class DetailViewController: UIViewController {
         if segue.identifier == "detailVCToCompareVC" {
             let displayVC = segue.destination as! CompareViewController
             displayVC.favoritePlaces = self.favoritePlaces
+            displayVC.CurrentCity = self.city
         }
     }
 }
