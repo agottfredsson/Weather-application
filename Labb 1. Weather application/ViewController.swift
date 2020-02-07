@@ -11,7 +11,6 @@ import UIKit
 
 class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
-    
     @IBOutlet weak var addButton: UIButton!
     @IBOutlet weak var searchBar: UISearchBar!
     @IBOutlet weak var weatherDescription: UILabel!
@@ -24,12 +23,17 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     @IBOutlet weak var imageMain: UIImageView!
     
     var weatherPlaces = Array<Weather>()
+    var favoritePlaces = Array<String>()
     var segueCity = ""
+    var homescreen :String = ""
+    var addedCity = ""
     
     
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        self.loadState()
         
         self.view.backgroundColor = UIColor(patternImage: UIImage(named: "bluebackground")!)
         tableViewWeather.backgroundColor = UIColor.clear
@@ -44,6 +48,8 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
 
     override func viewWillAppear(_ animated: Bool) {
         self.navigationController?.isNavigationBarHidden = true
+        getWeatherForCity(city: self.homescreen)
+        addCityToArray(city: addedCity)
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -53,17 +59,19 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableViewWeather.dequeueReusableCell(withIdentifier: "cell", for: indexPath) as! WeatherTableViewCell
         
+        let weatherString = WeatherString()
         let celcius :Int = Int(weatherPlaces[indexPath.row].main.temp - 273.15)
         cell.cellTemp.text = (String(celcius)+"°")
         cell.textLabel?.text = weatherPlaces[indexPath.row].name
         
-       cell.weatherImage.image = UIImage(named: checkWeatherImage(int: weatherPlaces[indexPath.row].weather[0].id))
+        cell.weatherImage.image = UIImage(named: weatherString.checkWeatherImage(int: weatherPlaces[indexPath.row].weather[0].id))
         
         return cell
     }
     
     func getWeatherForCity (city:String){
         let weatherApi = CityWeatherApi()
+        let weatherString = WeatherString()
         weatherApi.getWeatherForCity(city:city) { (result) in
         switch result {
             case .success(let weather):
@@ -78,57 +86,24 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                     self.cityTemp.text = String(celcius)+"°"
                     self.maxTemp.text = String(celciusMax)+"°C"
                     self.minTemp.text = String(celciusMin)+"°C"
-                    print(weather.timezone)
                     
                     self.weatherDescription.text = weather.weather[0].weatherDescription
                     
-                    self.imageMain.image = UIImage(named: self.checkWeatherImage(int: weather.weather[0].id))
-                    //Lägg till arraylistan
-                    self.weatherPlaces.append(weather)
+                    self.imageMain.image = UIImage(named: weatherString.checkWeatherImage(int: weather.weather[0].id))
                     
+                    
+                    //Lägg till arraylistan
+              //      self.weatherPlaces.append(weather)
                     self.tableViewWeather.reloadData()
+                    self.saveState()
                     }
             
             case .failure(let error): print("Error \(error)")
             }
         }
     }
-   
     
-    @IBAction func searchCityBtn(_ sender: Any) {
-        getWeatherForCity(city: searchCityTxt.text ?? "unkown")
-    }
-    
-    func checkWeatherImage (int: Int) -> String{
-        
-        switch (int) {
-        
-        case 200...232:
-            return "thunderstorm"
-        
-        case 300...321:
-            return "rain"
-        
-        case 500...531:
-            return "rain"
-            
-        case 600...622:
-            return "snow"
-        
-        case 701...781:
-            return "fog"
-        
-        case 800:
-            return "sun"
-        
-        case 801...804:
-            return "suncloud"
-        
-        default:
-            return "sun"
-        
-        }
-    }
+
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
@@ -137,7 +112,69 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "homeVCToDetailVC" {
         let displayVC = segue.destination as! DetailViewController
         displayVC.city = self.segueCity
+        }
     }
+    
+    func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        return true
+    }
+    
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        if (editingStyle == .delete) {
+            weatherPlaces.remove(at: indexPath.row)
+            self.saveState()
+            tableViewWeather.reloadData()
+        }
+    }
+    
+    func addCityToArray (city:String){
+        let weatherApi = CityWeatherApi()
+        weatherApi.getWeatherForCity(city:city) { (result) in
+        switch result {
+            case .success(let weather):
+                    DispatchQueue.main.async {
+                    self.weatherPlaces.append(weather)
+                    self.tableViewWeather.reloadData()
+                    self.saveState()
+            }
+            
+            case .failure(let error): print("Error \(error)")
+            }
+        }
+    }
+    
+    
+    func saveState() {
+        let defaults = UserDefaults.standard
+        favoritePlaces.removeAll()
+        for x in weatherPlaces {
+            favoritePlaces.append(x.name)
+        }
+       
+        defaults.set(favoritePlaces, forKey:"places")
+        
+        if self.homescreen != "" {
+            defaults.set(self.homescreen, forKey: "favorite")
+        }
+    }
+    
+    func loadState() {
+        
+        let defaults = UserDefaults.standard
+        
+        if defaults.array(forKey: "places") != nil {
+            let favoritePlaces:Array = defaults.array(forKey: "places")!
+                for string in favoritePlaces {
+                    //getWeatherForCity(city: string as! String)
+                    addCityToArray(city: string as! String)
+                    tableViewWeather.reloadData()
+                    }
+            }
+        self.getWeatherForCity(city: defaults.string(forKey: "favorite") ?? "")
+        
+    }
+    
 }

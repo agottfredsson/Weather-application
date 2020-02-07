@@ -15,26 +15,20 @@ class DetailViewController: UIViewController {
     @IBOutlet weak var detailMinTemp: UILabel!
     @IBOutlet weak var detailTemp: UILabel!
     @IBOutlet weak var detailDesc: UILabel!
+    
     var city: String = ""
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.navigationController?.navigationBar.topItem?.title = " "
         self.navigationController?.isNavigationBarHidden = false
         navigationController?.navigationBar.isTranslucent = false
-        UINavigationBar.appearance().shadowImage = UIImage()
-        UINavigationBar.appearance().setBackgroundImage(UIImage(), for: .default)
+        
+        self.navigationController?.navigationBar.setBackgroundImage(UIImage (named: "bluebackground"), for: .default)
         navigationController?.navigationBar.barTintColor = UIColor.clear
-        
-    //    self.navigationController?.navigationBar.setBackgroundImage(UIImage (named: "bluebackground"), for: .default)
-        self.navigationController?.navigationBar.topItem?.title = " "
-        
-        
-  
         
         self.view.backgroundColor = UIColor(patternImage: UIImage(named: "bluebackground")!)
         self.getWeatherForCity(city: city)
-        print(city)
-        
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -68,4 +62,15 @@ class DetailViewController: UIViewController {
             }
         }
     }
+    @IBAction func btnAddHomescreen(_ sender: Any) {
+       // self.segueCity = (weatherPlaces[indexPath.row].name)
+        self.performSegue(withIdentifier: "detailVCToHomeVC", sender: self)
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        let displayVC = segue.destination as! ViewController
+        displayVC.homescreen = self.city
+    }
+    
+    
 }
