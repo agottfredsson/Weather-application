@@ -21,6 +21,7 @@
 		3A539B1D23EB16DE00887772 /* WeatherTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A539B1C23EB16DE00887772 /* WeatherTableViewCell.swift */; };
 		3AA88B9E23EC70CA00DBBDB1 /* DetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AA88B9D23EC70CA00DBBDB1 /* DetailViewController.swift */; };
 		3AA88BA023EC780A00DBBDB1 /* WeatherString.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AA88B9F23EC780A00DBBDB1 /* WeatherString.swift */; };
+		3ACEB63923EDBC6F004D3FAF /* CompareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACEB63823EDBC6F004D3FAF /* CompareViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -61,6 +62,7 @@
 		3A539B1C23EB16DE00887772 /* WeatherTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherTableViewCell.swift; sourceTree = "<group>"; };
 		3AA88B9D23EC70CA00DBBDB1 /* DetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailViewController.swift; sourceTree = "<group>"; };
 		3AA88B9F23EC780A00DBBDB1 /* WeatherString.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherString.swift; sourceTree = "<group>"; };
+		3ACEB63823EDBC6F004D3FAF /* CompareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompareViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -115,6 +117,7 @@
 				3A21492223EAB8C600587622 /* SceneDelegate.swift */,
 				3A43EB9823ECC4B900259B67 /* SearchViewController.swift */,
 				3AA88B9D23EC70CA00DBBDB1 /* DetailViewController.swift */,
+				3ACEB63823EDBC6F004D3FAF /* CompareViewController.swift */,
 				3A21492423EAB8C600587622 /* ViewController.swift */,
 				3A539B1823EAD0A500887772 /* CityWeather.swift */,
 				3A539B1C23EB16DE00887772 /* WeatherTableViewCell.swift */,
@@ -279,6 +282,7 @@
 			files = (
 				3A539B1D23EB16DE00887772 /* WeatherTableViewCell.swift in Sources */,
 				3A21492523EAB8C600587622 /* ViewController.swift in Sources */,
+				3ACEB63923EDBC6F004D3FAF /* CompareViewController.swift in Sources */,
 				3A539B1923EAD0A500887772 /* CityWeather.swift in Sources */,
 				3A43EB9923ECC4B900259B67 /* SearchViewController.swift in Sources */,
 				3A21492123EAB8C600587622 /* AppDelegate.swift in Sources */,

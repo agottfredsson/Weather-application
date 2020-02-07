@@ -15,11 +15,23 @@ class DetailViewController: UIViewController {
     @IBOutlet weak var detailMinTemp: UILabel!
     @IBOutlet weak var detailTemp: UILabel!
     @IBOutlet weak var detailDesc: UILabel!
+    @IBOutlet weak var txtSunrise: UILabel!
+    @IBOutlet weak var txtSunset: UILabel!
+    @IBOutlet weak var txtTime: UILabel!
+    @IBOutlet weak var txtHumidity: UILabel!
+    @IBOutlet weak var txtWind: UILabel!
+    @IBOutlet weak var btnFav: UIButton!
+    
+    var favoritePlaces = Array<String>()
     
     var city: String = ""
+    var isCityFav = ""
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+       
+        
         self.navigationController?.navigationBar.topItem?.title = " "
         self.navigationController?.isNavigationBarHidden = false
         navigationController?.navigationBar.isTranslucent = false
@@ -32,9 +44,9 @@ class DetailViewController: UIViewController {
     }
     
     override func viewWillAppear(_ animated: Bool) {
-        
+        print("HERE THEY ARE")
+        print(self.favoritePlaces)
     }
-
     
     func getWeatherForCity (city:String){
         let weatherApi = CityWeatherApi()
@@ -44,17 +56,23 @@ class DetailViewController: UIViewController {
             case .success(let weather):
                 
                 DispatchQueue.main.async {
-                    //Uppdatera UI
+                    self.detailCity.text = weather.name
+                    
                     let celcius :Int = Int(weather.main.temp - 273.15)
                     let celciusMax :Int = Int(weather.main.tempMax - 273.15)
                     let celciusMin :Int = Int(weather.main.tempMin - 273.15)
-                    
-                    self.detailCity.text = weather.name
                     self.detailTemp.text = String(celcius)+"°"
                     self.detailMaxTemp.text = String(celciusMax)+"°C"
                     self.detailMinTemp.text = String(celciusMin)+"°C"
-                    self.detailDesc.text = weather.weather[0].weatherDescription
                     
+                    self.detailDesc.text = weather.weather[0].weatherDescription.capitalized
+                    self.txtWind.text = String(weather.wind.speed) + " m/s"
+                    self.txtHumidity.text = String(weather.main.humidity) + "%"
+                   
+                    self.txtTime.text = self.convertTimeZoneClock(timezone: weather.timezone)
+                    
+                    self.txtSunrise.text = (self.convertTimeZone(time: weather.sys.sunrise, timezone: weather.timezone))
+                    self.txtSunset.text = (self.convertTimeZone(time: weather.sys.sunset, timezone: weather.timezone))
                     self.detailImage.image = UIImage(named: weatherString.checkWeatherImage(int: weather.weather[0].id))
                     }
             
@@ -62,15 +80,48 @@ class DetailViewController: UIViewController {
             }
         }
     }
+    
+    func convertTimeZone (time: Int, timezone: Int) -> String {
+        let date = NSDate(timeIntervalSince1970: TimeInterval(time))
+        let dateFormatter = DateFormatter()
+        dateFormatter.timeStyle = DateFormatter.Style.short
+        
+        dateFormatter.timeZone = TimeZone(secondsFromGMT: timezone)
+        let localdate = dateFormatter.string(from: date as Date)
+        
+        return localdate
+    }
+    
+    func convertTimeZoneClock (timezone: Int) -> String {
+        let time = NSDate().timeIntervalSince1970
+        let x :Int = Int(time)
+        
+        let date = NSDate(timeIntervalSince1970: TimeInterval(x))
+        let dateFormatter = DateFormatter()
+        dateFormatter.timeStyle = DateFormatter.Style.short
+        dateFormatter.timeZone = TimeZone(secondsFromGMT: timezone)
+        
+        let localdate = dateFormatter.string(from: date as Date)
+        
+        
+        return localdate
+    }
+    
     @IBAction func btnAddHomescreen(_ sender: Any) {
-       // self.segueCity = (weatherPlaces[indexPath.row].name)
         self.performSegue(withIdentifier: "detailVCToHomeVC", sender: self)
+        
+        
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "detailVCToHomeVC" {
         let displayVC = segue.destination as! ViewController
         displayVC.homescreen = self.city
+        }
+        
+        if segue.identifier == "detailVCToCompareVC" {
+            let displayVC = segue.destination as! CompareViewController
+            displayVC.favoritePlaces = self.favoritePlaces
+        }
     }
-    
-    
 }

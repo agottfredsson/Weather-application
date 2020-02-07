@@ -11,15 +11,11 @@ import UIKit
 
 class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
-    @IBOutlet weak var addButton: UIButton!
-    @IBOutlet weak var searchBar: UISearchBar!
+    @IBOutlet weak var txtTime: UILabel!
     @IBOutlet weak var weatherDescription: UILabel!
-    @IBOutlet weak var minTemp: UILabel!
-    @IBOutlet weak var maxTemp: UILabel!
     @IBOutlet weak var tableViewWeather: UITableView!
     @IBOutlet weak var cityName: UILabel!
     @IBOutlet weak var cityTemp: UILabel!
-    @IBOutlet weak var searchCityTxt: UITextField!
     @IBOutlet weak var imageMain: UIImageView!
     
     var weatherPlaces = Array<Weather>()
@@ -28,12 +24,15 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     var homescreen :String = ""
     var addedCity = ""
     
+    var isFav: String = ""
+    
     
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         self.loadState()
+        
         
         self.view.backgroundColor = UIColor(patternImage: UIImage(named: "bluebackground")!)
         tableViewWeather.backgroundColor = UIColor.clear
@@ -44,10 +43,11 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         
         self.tableViewWeather.delegate = self
         self.tableViewWeather.dataSource = self
-}
+        
+    }
 
     override func viewWillAppear(_ animated: Bool) {
-        self.navigationController?.isNavigationBarHidden = true
+      
         getWeatherForCity(city: self.homescreen)
         addCityToArray(city: addedCity)
     }
@@ -77,23 +77,16 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             case .success(let weather):
                 
                 DispatchQueue.main.async {
-                    //Uppdatera UI
+              
                     let celcius :Int = Int(weather.main.temp - 273.15)
-                    let celciusMax :Int = Int(weather.main.tempMax - 273.15)
-                    let celciusMin :Int = Int(weather.main.tempMin - 273.15)
-                    
                     self.cityName.text = weather.name
                     self.cityTemp.text = String(celcius)+"°"
-                    self.maxTemp.text = String(celciusMax)+"°C"
-                    self.minTemp.text = String(celciusMin)+"°C"
-                    
-                    self.weatherDescription.text = weather.weather[0].weatherDescription
+                    self.weatherDescription.text = weather.weather[0].weatherDescription.capitalized
                     
                     self.imageMain.image = UIImage(named: weatherString.checkWeatherImage(int: weather.weather[0].id))
                     
+                    self.txtTime.text = self.convertTimeZoneClock(timezone: weather.timezone)
                     
-                    //Lägg till arraylistan
-              //      self.weatherPlaces.append(weather)
                     self.tableViewWeather.reloadData()
                     self.saveState()
                     }
@@ -115,6 +108,8 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         if segue.identifier == "homeVCToDetailVC" {
         let displayVC = segue.destination as! DetailViewController
         displayVC.city = self.segueCity
+        displayVC.isCityFav = self.homescreen
+        displayVC.favoritePlaces = self.favoritePlaces
         }
     }
     
@@ -132,6 +127,9 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     
     func addCityToArray (city:String){
         let weatherApi = CityWeatherApi()
+        
+        
+        
         weatherApi.getWeatherForCity(city:city) { (result) in
         switch result {
             case .success(let weather):
@@ -145,6 +143,20 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             }
         }
     }
+    
+    func convertTimeZoneClock (timezone: Int) -> String {
+           let time = NSDate().timeIntervalSince1970
+           let x :Int = Int(time)
+           
+           let date = NSDate(timeIntervalSince1970: TimeInterval(x))
+           let dateFormatter = DateFormatter()
+           dateFormatter.timeStyle = DateFormatter.Style.short
+           dateFormatter.timeZone = TimeZone(secondsFromGMT: timezone)
+           
+           let localdate = dateFormatter.string(from: date as Date)
+           
+           return localdate
+       }
     
     
     func saveState() {
@@ -168,11 +180,11 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         if defaults.array(forKey: "places") != nil {
             let favoritePlaces:Array = defaults.array(forKey: "places")!
                 for string in favoritePlaces {
-                    //getWeatherForCity(city: string as! String)
                     addCityToArray(city: string as! String)
                     tableViewWeather.reloadData()
                     }
             }
+        
         self.getWeatherForCity(city: defaults.string(forKey: "favorite") ?? "")
         
     }
