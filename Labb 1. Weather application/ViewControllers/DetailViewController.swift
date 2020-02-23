@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import CoreMotion
 
 class DetailViewController: UIViewController {
     @IBOutlet weak var detailCity: UILabel!
@@ -21,17 +22,25 @@ class DetailViewController: UIViewController {
     @IBOutlet weak var txtHumidity: UILabel!
     @IBOutlet weak var txtWind: UILabel!
     @IBOutlet weak var btnFav: UIButton!
+    @IBOutlet weak var humidity: UIImageView!
+    @IBOutlet weak var wind: UIImageView!
     
+    @IBOutlet weak var sunset: UIImageView!
+    @IBOutlet weak var sunrise: UIImageView!
+    @IBOutlet weak var arrowDown: UIImageView!
+    @IBOutlet weak var arrowUp: UIImageView!
     var favoritePlaces = Array<String>()
     
+    var animator: UIDynamicAnimator!
+    var gravity: UIGravityBehavior!
+    var collision: UICollisionBehavior!
     var city: String = ""
     var isCityFav = ""
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-       
-        
+        self.becomeFirstResponder()
         self.navigationController?.navigationBar.topItem?.title = " "
         self.navigationController?.isNavigationBarHidden = false
         navigationController?.navigationBar.isTranslucent = false
@@ -41,11 +50,40 @@ class DetailViewController: UIViewController {
         
         self.view.backgroundColor = UIColor(patternImage: UIImage(named: "bluebackground")!)
         self.getWeatherForCity(city: city)
+        self.removeViews()
+    }
+    
+    func removeViews (){
+        
+        self.humidity.alpha = -9.0
+        self.wind.alpha = -9.0
+        self.txtHumidity.alpha = -9.0
+        self.txtWind.alpha = -9.0
+        self.detailImage.alpha = -9.0
+        self.detailCity.transform = self.detailCity.transform.translatedBy(x: 0, y: -200)
+        self.detailTemp.transform = self.detailTemp.transform.translatedBy(x: 0, y: -200)
+        self.detailDesc.transform = self.detailDesc.transform.translatedBy(x: 0, y: -200)
+        self.txtTime.transform = self.txtTime.transform.translatedBy(x: 0, y: -200)
+        
+        
+        self.detailMaxTemp.transform = self.detailMaxTemp.transform.translatedBy(x: 200, y: 0)
+        self.detailMinTemp.transform = self.detailMinTemp.transform.translatedBy(x: 200, y: 0)
+        self.arrowUp.transform = self.arrowUp.transform.translatedBy(x: 200, y: 0)
+        self.arrowDown.transform = self.arrowDown.transform.translatedBy(x: 200, y: 0)
+        
+        self.txtSunrise.transform = self.txtSunrise.transform.translatedBy(x: -200, y: 0)
+        self.txtSunset.transform = self.txtSunset.transform.translatedBy(x: 200, y: 0)
+        
+        self.sunrise.transform = self.sunrise.transform.translatedBy(x: -200, y: 0)
+        self.sunset.transform = self.sunset.transform.translatedBy(x: 200, y: 0)
     }
     
     override func viewWillAppear(_ animated: Bool) {
-        print("HERE THEY ARE")
         print(self.favoritePlaces)
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+         self.animation()
     }
     
     func getWeatherForCity (city:String){
@@ -109,14 +147,13 @@ class DetailViewController: UIViewController {
     
     @IBAction func btnAddHomescreen(_ sender: Any) {
         self.performSegue(withIdentifier: "detailVCToHomeVC", sender: self)
-        
-        
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "detailVCToHomeVC" {
         let displayVC = segue.destination as! ViewController
         displayVC.homescreen = self.city
+            
         }
         
         if segue.identifier == "detailVCToCompareVC" {
@@ -124,5 +161,66 @@ class DetailViewController: UIViewController {
             displayVC.favoritePlaces = self.favoritePlaces
             displayVC.CurrentCity = self.city
         }
+    }
+    
+       func animation (){
+          
+        UIView.animate(withDuration: 2.0, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseOut, animations: {
+            
+            self.detailImage.alpha = 1.0
+            self.txtHumidity.alpha = 1.0
+            self.txtWind.alpha = 1.0
+            self.humidity.alpha = 1.0
+            self.wind.alpha = 1.0
+            
+            self.detailCity.transform = self.detailCity.transform.translatedBy(x: 0, y: 200)
+            self.detailTemp.transform = self.detailTemp.transform.translatedBy(x: 0, y: 200)
+            self.detailDesc.transform = self.detailDesc.transform.translatedBy(x: 0, y: 200)
+            self.txtTime.transform = self.txtTime.transform.translatedBy(x: 0, y: 200)
+            
+            self.detailMaxTemp.transform = self.detailMaxTemp.transform.translatedBy(x: -200, y: 0)
+            self.detailMinTemp.transform = self.detailMinTemp.transform.translatedBy(x: -200, y: 0)
+            self.arrowUp.transform = self.arrowUp.transform.translatedBy(x: -200, y: 0)
+            self.arrowDown.transform = self.arrowDown.transform.translatedBy(x: -200, y: 0)
+            
+            self.txtSunrise.transform = self.txtSunrise.transform.translatedBy(x: 200, y: 0)
+            self.txtSunset.transform = self.txtSunset.transform.translatedBy(x: -200, y: 0)
+            
+            self.sunrise.transform = self.sunrise.transform.translatedBy(x: 200, y: 0)
+            self.sunset.transform = self.sunset.transform.translatedBy(x: -200, y: 0)
+            })
+       
+    }
+    
+    override var canBecomeFirstResponder: Bool {
+        get {
+            return true
+        }
+    }
+
+    override func motionEnded(_ motion: UIEvent.EventSubtype, with event: UIEvent?) {
+        if motion == .motionShake {
+            self.shakeMethod()
+        }
+        
+    }
+    
+    func shakeMethod (){
+
+        let outlets = [self.detailCity, self.detailDesc, self.detailImage, self.detailMaxTemp, self.detailMinTemp, self.detailTemp, self.humidity, self.wind, self.txtWind, self.detailTemp, self.humidity, self.wind, self.txtWind, self.txtHumidity, self.arrowUp, self.arrowDown, self.txtTime, self.sunset, self.sunrise, self.txtSunset, self.txtSunrise]
+      
+        animator = UIDynamicAnimator(referenceView: view)
+        gravity = UIGravityBehavior()
+        collision = UICollisionBehavior()
+        
+        for i in 0...outlets.count-1 {
+            gravity.addItem(outlets[i]!)
+            collision.addItem(outlets[i]!)
+        }
+
+        animator.addBehavior(gravity)
+        animator.addBehavior(collision)
+        
+        collision.translatesReferenceBoundsIntoBoundary = true
     }
 }

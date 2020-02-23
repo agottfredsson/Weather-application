@@ -12,15 +12,16 @@ class CompareViewController: UIViewController , UITableViewDelegate, UITableView
     
     
     
+    @IBOutlet weak var constraintCompareWind: NSLayoutConstraint!
+    @IBOutlet weak var constraintCompareHumidity: NSLayoutConstraint!
+    @IBOutlet weak var constraintCompareTemp: NSLayoutConstraint!
+    @IBOutlet weak var constraintCurrentWind: NSLayoutConstraint!
+    @IBOutlet weak var constraintCurrentTemp: NSLayoutConstraint!
+    @IBOutlet weak var constraintCurrentHumidity: NSLayoutConstraint!
     @IBOutlet weak var txtHumidityCurrent: UILabel!
-    
     @IBOutlet weak var txtWindCurrent: UILabel!
-    
     @IBOutlet weak var txtHumidityCompared: UILabel!
-    
     @IBOutlet weak var txtWindCompared: UILabel!
-    
-    
     @IBOutlet weak var txtTempCompared: UILabel!
     @IBOutlet weak var txtTempCurrent: UILabel!
     @IBOutlet weak var currentTemp: UIView!
@@ -31,19 +32,14 @@ class CompareViewController: UIViewController , UITableViewDelegate, UITableView
     
     var CurrentCity = ""
     
-    
-    
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        
         
         self.view.backgroundColor = UIColor(patternImage: UIImage(named: "bluebackground")!)
         compareTableView.backgroundColor = UIColor.clear
         txtCurrentCity.text = self.CurrentCity
         self.compareTableView.delegate = self
         self.compareTableView.dataSource = self
-      
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -59,6 +55,7 @@ class CompareViewController: UIViewController , UITableViewDelegate, UITableView
         cell.textLabel?.text = favoritePlaces[indexPath.row]
         cell.backgroundColor = UIColor.clear
         cell.selectionStyle = UITableViewCell.SelectionStyle.none
+        cell.textLabel?.textColor = UIColor.white
         
         return cell
     }
@@ -73,12 +70,6 @@ class CompareViewController: UIViewController , UITableViewDelegate, UITableView
     func updateData (index: Int) {
         self.txtCompareCity.text = favoritePlaces[index]
         
-        
-        
-        
-        
-        
-        
     }
     
     func getWeatherForCurrentCity (city:String){
@@ -88,11 +79,13 @@ class CompareViewController: UIViewController , UITableViewDelegate, UITableView
             case .success(let weather):
                 
                 DispatchQueue.main.async {
-                   // let celcius :Int = Int(weather.main.temp - 273.15)
+                    let celcius :Int = Int(weather.main.temp - 273.15)
                     
-                    //self.heightConstraint.constant = CGFloat(celcius * 5)
-        
-                    self.txtTempCurrent.text = String(Int(weather.main.temp - 273.15)) + "°C"
+                    self.constraintCurrentTemp.constant = CGFloat(celcius * 5)
+                    self.constraintCurrentHumidity.constant = CGFloat(weather.main.humidity)
+                    self.constraintCurrentWind.constant = CGFloat(weather.wind.speed)
+                    
+                    self.txtTempCurrent.text = String(Int(weather.main.temp - 273.15)) + "°"
                     self.txtHumidityCurrent.text = String(Int(weather.main.humidity)) + "%"
                     self.txtWindCurrent.text = String(Int(weather.wind.speed)) + "m/s"
                     }
@@ -103,10 +96,6 @@ class CompareViewController: UIViewController , UITableViewDelegate, UITableView
         }
     }
     
-    
-    
-    
-    
     func getWeatherForCompareCity (city:String){
         let weatherApi = CityWeatherApi()
         weatherApi.getWeatherForCity(city:city) { (result) in
@@ -114,7 +103,12 @@ class CompareViewController: UIViewController , UITableViewDelegate, UITableView
             case .success(let weather):
                 
                 DispatchQueue.main.async {
-                    self.txtTempCompared.text = String(Int(weather.main.temp - 273.15)) + "°C"
+                    let celcius :Int = Int(weather.main.temp - 273.15)
+                    
+                    self.constraintCompareTemp.constant = CGFloat(celcius * 5)
+                    self.constraintCompareHumidity.constant = CGFloat(weather.main.humidity)
+                    self.constraintCompareWind.constant = CGFloat(weather.wind.speed)
+                    self.txtTempCompared.text = String(Int(weather.main.temp - 273.15)) + "°"
                     self.txtHumidityCompared.text = String(Int(weather.main.humidity)) + "%"
                     self.txtWindCompared.text = String(Int(weather.wind.speed)) + "m/s"
                     
@@ -125,7 +119,4 @@ class CompareViewController: UIViewController , UITableViewDelegate, UITableView
             }
         }
     }
-    
-
-
 }

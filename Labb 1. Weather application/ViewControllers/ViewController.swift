@@ -11,6 +11,7 @@ import UIKit
 
 class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
+    @IBOutlet weak var txtTip: UILabel!
     @IBOutlet weak var txtTime: UILabel!
     @IBOutlet weak var weatherDescription: UILabel!
     @IBOutlet weak var tableViewWeather: UITableView!
@@ -33,21 +34,19 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         
         self.loadState()
         
-        
         self.view.backgroundColor = UIColor(patternImage: UIImage(named: "bluebackground")!)
         tableViewWeather.backgroundColor = UIColor.clear
         
-        let tap = UITapGestureRecognizer(target: self.view, action: #selector(UIView.endEditing))
-        tap.cancelsTouchesInView =  false
-        view.addGestureRecognizer(tap)
-        
         self.tableViewWeather.delegate = self
         self.tableViewWeather.dataSource = self
-        
     }
+    
+   
+   
 
     override func viewWillAppear(_ animated: Bool) {
-      
+        
+        
         getWeatherForCity(city: self.homescreen)
         addCityToArray(city: addedCity)
     }
@@ -56,9 +55,24 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         return self.weatherPlaces.count
     }
     
+    func weatherTip (temp :Int){
+        switch temp {
+        case ..<0 : txtTip.text = "Tip: Grab tons of clothes!"
+            
+        case 0...10: txtTip.text = "Tip: You're ok with a jacket! "
+            
+        case 11...20: txtTip.text = "Tip: You'll be fine with a hoodie!"
+            
+        case 20... : txtTip.text = "Tip: Just get a T-shirt, its enough!"
+            
+        default:
+            txtTip.text = "nononono"
+        }
+    }
+    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableViewWeather.dequeueReusableCell(withIdentifier: "cell", for: indexPath) as! WeatherTableViewCell
-        
+        cell.textLabel?.textColor = UIColor.white
         let weatherString = WeatherString()
         let celcius :Int = Int(weatherPlaces[indexPath.row].main.temp - 273.15)
         cell.cellTemp.text = (String(celcius)+"°")
@@ -77,11 +91,14 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
             case .success(let weather):
                 
                 DispatchQueue.main.async {
-              
+                    
+                    
                     let celcius :Int = Int(weather.main.temp - 273.15)
                     self.cityName.text = weather.name
                     self.cityTemp.text = String(celcius)+"°"
                     self.weatherDescription.text = weather.weather[0].weatherDescription.capitalized
+                    
+                    self.weatherTip(temp: celcius)
                     
                     self.imageMain.image = UIImage(named: weatherString.checkWeatherImage(int: weather.weather[0].id))
                     
@@ -96,13 +113,12 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         }
     }
     
-
-    
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        
-        self.segueCity = (weatherPlaces[indexPath.row].name)
+        self.segueCity = (self.weatherPlaces[indexPath.row].name)
         self.performSegue(withIdentifier: "homeVCToDetailVC", sender: self)
+        
     }
+   
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "homeVCToDetailVC" {
@@ -127,8 +143,6 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     
     func addCityToArray (city:String){
         let weatherApi = CityWeatherApi()
-        
-        
         
         weatherApi.getWeatherForCity(city:city) { (result) in
         switch result {
@@ -182,11 +196,21 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
                 for string in favoritePlaces {
                     addCityToArray(city: string as! String)
                     tableViewWeather.reloadData()
-                    }
             }
+        }
         
-        self.getWeatherForCity(city: defaults.string(forKey: "favorite") ?? "")
+        self.getWeatherForCity(city: defaults.string(forKey: "favorite") ?? "sweden")
         
+        if defaults.array(forKey: "Cities") == nil {
+            self.initCities()
+        }
     }
+    
+    func initCities (){
+        let initCities = initCitiesArray()
+        let defaults = UserDefaults.standard
+        defaults.set(initCities.initCities(), forKey: "Cities")
+    }
+   
     
 }
